@@ -22,7 +22,7 @@
 %type <node> init_declarator_list type_specificator struct_or_union_spec struct_decl_list struct_decl
 %type <node> spec_qualifier_list translation_unit declarator direct_declarator
 
-%type <value> struct_declarator_list
+%type <node> struct_declarator_list struct_declarator
 
 %left '+' '-'
 %left '*' '/'
@@ -45,17 +45,17 @@ external_declaration		: function_definition										{$$ = new Node("Function de
 							;
 function_definition			: decl_specs declarator decl_list compound_stat 			{printf("function_definition1\n");}
 							| declarator decl_list compound_stat						{printf("function_definition2\n");}
-							| decl_specs declarator	compound_stat 						{$$ = new Node("Func", $1->value);}	
+							| decl_specs declarator	compound_stat 						{$$ = new Node("Func"); $$->addChild($1);}	
 							| declarator compound_stat                                  {printf("function_definition4\n");}
 							;
-declaration					: decl_specs init_declarator_list ';' 						{}				
-							| decl_specs ';'											{}				
+declaration					: decl_specs init_declarator_list ';' 						{$$ = new Node("declaration"); $$->addChild($1);}				
+							| decl_specs ';'											{$$ = $1;}				
 							;
 decl_list					: declaration
 							| decl_list declaration
 							;
-decl_specs					: type_specificator decl_specs
-							| type_specificator 										
+decl_specs					: type_specificator decl_specs								{$$ = new Node("decl_specs"); $$->addChild($1);}				
+							| type_specificator 										{$$ = $1;}				
 							;
 type_specificator			: TYPE														{$$ = new Node("Type", $1);}
 							| struct_or_union_spec										{$$ = new Node("Struct definition"); $$->addChild($1);}
@@ -67,34 +67,34 @@ struct_or_union_spec		: STRUCT id '{' struct_decl_list '}'						{$$ = new Node("
 struct_decl_list			: struct_decl												{$$ = $1;}
 							| struct_decl_list struct_decl								{$$ = new Node("Fields"); $$->addChild($1); $$->addChild($2);}
 							;
-init_declarator_list		: init_declarator
-							| init_declarator_list ',' init_declarator
+init_declarator_list		: init_declarator											{$$ = new Node("init_declarator_list");}
+							| init_declarator_list ',' init_declarator	
 							;
 init_declarator				: declarator
 							| declarator '=' initializer
 							;
-struct_decl					: spec_qualifier_list struct_declarator_list ';'			{$$ = new Node("Field", $1->value + " " + $2);}
+struct_decl					: spec_qualifier_list struct_declarator_list ';'			{$$ = new Node("Field"); $$->addChild($1); $$->addChild($2);}
 							;
 spec_qualifier_list			: type_specificator spec_qualifier_list						{}
-							| type_specificator											{$$ = new Node("", $$->value);}
+							| type_specificator											{$$ = new Node("Type", $$->value);}
 							;
-struct_declarator_list		: struct_declarator											{}
+struct_declarator_list		: struct_declarator											{$$ = $1;}
 							| struct_declarator_list ',' struct_declarator				{}
 							;
-struct_declarator			: declarator
+struct_declarator			: declarator												{$$ = $1;}	
 							| declarator ':' const_exp
 							| ':' const_exp
 							;
 declarator					: pointer direct_declarator									{/*$$ = new Node("Declarator"); $$->addChild($2);*/}
-							| direct_declarator											{/*$$ = new Node("Declarator"); $$->addChild($1);*/}
+							| direct_declarator											{$$ = $1;}
 							;
-direct_declarator			: id 														{/*$$ = new Node("ID", $1);*/}
-							| '(' declarator ')'										{/*$$ = new Node("ID1");*/}
-							| direct_declarator '[' const_exp ']'						{/*$$ = new Node("ID2");*/}	
-							| direct_declarator '['	']'                                 {/*$$ = new Node("ID3");*/}
-							| direct_declarator '(' param_list ')' 			            {/*$$ = new Node("ID4");*/}
-							| direct_declarator '(' id_list ')' 					    {/*$$ = new Node("ID5");*/}
-							| direct_declarator '('	')' 							    {/*$$ = new Node("ID6");*/}
+direct_declarator			: id 														{$$ = new Node("Id", $1);}
+							| '(' declarator ')'										{$$ = new Node("ID1");}
+							| direct_declarator '[' const_exp ']'						{$$ = new Node("ID2");}	
+							| direct_declarator '['	']'                                 {$$ = new Node("ID3");}
+							| direct_declarator '(' param_list ')' 			            {$$ = new Node("ID4");}
+							| direct_declarator '(' id_list ')' 					    {$$ = new Node("ID5");}
+							| direct_declarator '('	')' 							    {$$ = new Node("ID6");}
 							;
 pointer						: '*'
 							| '*' pointer

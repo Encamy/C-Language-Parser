@@ -13,8 +13,8 @@
 	char * value;
 }
 
-%token <node> string STRUCT
-%token <value> id TYPE HEADER char_const number enumeration_const PUNC COMPARISON
+%token <node> STRUCT
+%token <value> id TYPE HEADER char_const number enumeration_const PUNC COMPARISON string
 %token IF FOR DO WHILE BREAK CONTINUE RETURN OR AND inc_const
 %token point_const ELSE
 
@@ -22,7 +22,7 @@
 %type <node> init_declarator_list type_specificator struct_or_union_spec struct_decl_list struct_decl
 %type <node> spec_qualifier_list translation_unit declarator direct_declarator exp assignment_operator
 %type <node> struct_declarator_list struct_declarator param_list param_decl compound_stat stat jump_statement
-%type <node> assignment_exp conditional_exp logical_and_exp inclusive_or_exp exclusive_or_exp and_exp
+%type <node> assignment_exp conditional_exp logical_and_exp inclusive_or_exp exclusive_or_exp and_exp argument_exp_list
 %type <node> equality_exp relational_exp additive_exp mult_exp unary_exp logical_or_exp postfix_exp primary_exp
 %type <node> decl_list init_declarator body_list decl_or_statement loop_statement exp_stat selection_statement
 %type <value> consts
@@ -207,21 +207,21 @@ unary_exp					: postfix_exp												{$$ = $1;}
 unary_operator				: '&' | '*' | '+' | '-' | '~' | '!' 				
 							;
 postfix_exp					: primary_exp 												{$$ = $1;}
-							| postfix_exp '[' exp ']'                                   {$$ = new Node("Postfix expression");}
-							| postfix_exp '(' argument_exp_list ')'                     {$$ = new Node("Postfix expression");}
-							| postfix_exp '(' ')'                                       {$$ = new Node("Postfix expression");}
-							| postfix_exp '.' id                                        {$$ = new Node("Postfix expression");}
-							| postfix_exp point_const id                                {$$ = new Node("Postfix expression");}
-							| postfix_exp inc_const                                     {$$ = new Node("Postfix expression");}
+							| postfix_exp '[' exp ']'                                   {$$ = new Node("Array element access"); $$->addChild($1); $$->addChild($3); }
+							| postfix_exp '(' argument_exp_list ')'                     {$$ = new Node("Function call"); $$->addChild($1); $$->addChild($3); }
+							| postfix_exp '(' ')'                                       {$$ = new Node("Function call"); $$->addChild($1); }
+							| postfix_exp '.' id                                        {$$ = new Node("Struct field access", $3); $$->addChild($1); }
+							| postfix_exp point_const id                                {$$ = new Node("Pointer access", "->" + std::string($3)); $$->addChild($1);}
+							| postfix_exp inc_const                                     {$$ = new Node("Increment/Decrement"); $$->addChild($1); }
 							;
 primary_exp					: id 														{$$ = new Node("id", $1);}
 							| consts 													{$$ = new Node("Value", $1);}
-							| string 													{$$ = new Node("string");}
+							| string 													{$$ = new Node("string", $1);}
 							| '(' exp ')'												{$$ = new Node("expression"); $$->addChild($2);}
 							;
-argument_exp_list			: assignment_exp
-							| argument_exp_list ',' assignment_exp
-							;
+argument_exp_list			: assignment_exp											{$$ = $1;}
+							| argument_exp_list ',' assignment_exp						{$$ = $3; $$->addChild($1);}
+							;		
 consts						: number 													{$$ = $1;}
 							| char_const                                                {$$ = $1;}
 							| enumeration_const                                         {$$ = $1;}

@@ -26,8 +26,8 @@
 [0-9]+																										{yylval.value = strdup(yytext); return number;}
 [0-9]+"."[0-9]+																								{yylval.value = strdup(yytext); return number;}	
 "'"."'"																										{yylval.value = strdup(yytext); return char_const;}
-[a-zA-z_][a-zA-z_0-9]*			 																			{ 	yylval.value = strdup(yytext); return id;	}
-\"(\\.|[^\"])*\"																							{return string;}
+[a-zA-z_][a-zA-z_0-9]*			 																			{yylval.value = strdup(yytext); return id;}
+\"(\\.|[^\"])*\"																							{yylval.value = strdup(yytext); return string;}
 "//"(\\.|[^\n])*[\n]																						;
 [/][*]([^*]|[*]*[^*/])*[*]+[/]                                                                              ;
 [ \t\n]																										;

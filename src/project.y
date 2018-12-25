@@ -20,11 +20,11 @@
 
 %type <node> external_declaration program_unit main_parse function_definition declaration decl_specs
 %type <node> init_declarator_list type_specificator struct_or_union_spec struct_decl_list struct_decl
-%type <node> spec_qualifier_list translation_unit declarator direct_declarator statement_list exp
+%type <node> spec_qualifier_list translation_unit declarator direct_declarator exp
 %type <node> struct_declarator_list struct_declarator param_list param_decl compound_stat stat jump_statement
 %type <node> assignment_exp conditional_exp logical_and_exp inclusive_or_exp exclusive_or_exp and_exp
 %type <node> equality_exp relational_exp additive_exp mult_exp unary_exp logical_or_exp postfix_exp primary_exp
-%type <node> decl_list init_declarator
+%type <node> decl_list init_declarator body_list decl_or_statement
 %type <value> consts
 
 %left '+' '-'
@@ -55,7 +55,7 @@ declaration					: decl_specs init_declarator_list ';' 						{$$ = new Node("decl
 							| decl_specs ';'											{$$ = $1;}				
 							;
 decl_list					: declaration												{$$ = $1;}
-							| decl_list declaration                                     {$$ = new Node("Declarations"); $$->addChild($2);}
+							| decl_list declaration                                     {$$ = new Node("Declarations"); $$->addChild($1); $$->addChild($2);}
 							;
 decl_specs					: type_specificator decl_specs								{$$ = new Node("decl_specs"); $$->addChild($1);}				
 							| type_specificator 										{$$ = $1;}				
@@ -127,13 +127,14 @@ stat						: exp_stat 											  		{$$ = new Node("Stat1");}
 exp_stat					: exp ';'
 							| ';'
 							;
-compound_stat				: '{' decl_list statement_list '}'   						{$$ = new Node("Body"); $$->addChild($2); $$->addChild($3);}
-							| '{' statement_list '}'									{$$ = new Node("Body"); $$->addChild($2);}	
-							| '{' decl_list	'}'										    {$$ = new Node("Body3");}
-							| '{' '}'												    {$$ = new Node("Body4");}
+body_list					: decl_or_statement											{$$ = new Node("Declarations"); $$->addChild($1);}
+							| body_list decl_or_statement								{$$ = $1; $$->addChild($2);}
 							;
-statement_list				: stat     													{$$ = $1;}											
-							| statement_list stat  										{$$ = new Node("statement_list"); $$->addChild($2);}
+decl_or_statement			: declaration												{$$ = $1;}
+							| stat														{$$ = $1;}
+							;
+compound_stat				: '{' body_list '}'											{$$ = new Node("Body"); $$->addChild($2);}	
+							| '{' '}'												    {$$ = new Node("Empty body");}
 							;
 selection_statement			: IF '(' exp ')' stat 									%prec "then"
 							| IF '(' exp ')' stat ELSE stat

@@ -16,11 +16,13 @@ int main(int argc, char * argv[])
 {
   float a = -2.0;
   bool variable;
-  int i = 0;
-  struct Point *point;
-  int someArray[25];
-    
+
   point->x = 7;
+  
+  int i = 0;
+  //struct Point *point;
+  int someArray[25];
+  
   for (i = 0; ; i++)
   {
 	  someArray[i] = i * 2;

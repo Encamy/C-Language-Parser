@@ -23,9 +23,9 @@
 "->"																										{return point_const;}
 ";"|"="|","|"{"|"}"|"("|")"|"["|"]"|"*"|"+"|"-"|"/"|"?"|":"|"&"|"|"|"^"|"!"|"~"|"%"|"<"|">"					{return yytext[0];}
 "*="|"/="|"+="|"%="|">>="|"-="|"<<="|"&="|"^="|"|="															{return PUNC;}
-[0-9]+																										{return number;}
-[0-9]+"."[0-9]+																								{return number;}	
-"'"."'"																										{return char_const;}
+[0-9]+																										{yylval.value = strdup(yytext); return number;}
+[0-9]+"."[0-9]+																								{yylval.value = strdup(yytext); return number;}	
+"'"."'"																										{yylval.value = strdup(yytext); return char_const;}
 [a-zA-z_][a-zA-z_0-9]*			 																			{ 	yylval.value = strdup(yytext); return id;	}
 \"(\\.|[^\"])*\"																							{return string;}
 "//"(\\.|[^\n])*[\n]																						;

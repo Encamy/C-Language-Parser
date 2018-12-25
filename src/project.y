@@ -13,8 +13,8 @@
 	char * value;
 }
 
-%token <node> char_const number string enumeration_const STRUCT
-%token <value> id TYPE HEADER
+%token <node> string STRUCT
+%token <value> id TYPE HEADER char_const number enumeration_const
 %token IF FOR DO WHILE BREAK CONTINUE RETURN PUNC OR AND COMPARISON inc_const
 %token point_const ELSE
 
@@ -25,6 +25,7 @@
 %type <node> assignment_exp conditional_exp logical_and_exp inclusive_or_exp exclusive_or_exp and_exp
 %type <node> equality_exp relational_exp additive_exp mult_exp unary_exp logical_or_exp postfix_exp primary_exp
 %type <node> decl_list init_declarator
+%type <value> consts
 
 %left '+' '-'
 %left '*' '/'
@@ -213,16 +214,16 @@ postfix_exp					: primary_exp 												{$$ = $1;}
 							| postfix_exp inc_const                                     {$$ = new Node("Postfix expression");}
 							;
 primary_exp					: id 														{$$ = new Node("id", $1);}
-							| consts 													{$$ = new Node("value");}	
+							| consts 													{$$ = new Node("Value", $1);}
 							| string 													{$$ = new Node("string");}
 							| '(' exp ')'												{$$ = new Node("expression"); $$->addChild($2);}
 							;
 argument_exp_list			: assignment_exp
 							| argument_exp_list ',' assignment_exp
 							;
-consts						: number 											
-							| char_const
-							| enumeration_const
+consts						: number 													{$$ = $1;}
+							| char_const                                                {$$ = $1;}
+							| enumeration_const                                         {$$ = $1;}
 							;
 %%
 

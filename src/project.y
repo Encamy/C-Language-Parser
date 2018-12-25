@@ -14,13 +14,13 @@
 }
 
 %token <node> string STRUCT
-%token <value> id TYPE HEADER char_const number enumeration_const
-%token IF FOR DO WHILE BREAK CONTINUE RETURN PUNC OR AND COMPARISON inc_const
+%token <value> id TYPE HEADER char_const number enumeration_const PUNC COMPARISON
+%token IF FOR DO WHILE BREAK CONTINUE RETURN OR AND inc_const
 %token point_const ELSE
 
 %type <node> external_declaration program_unit main_parse function_definition declaration decl_specs
 %type <node> init_declarator_list type_specificator struct_or_union_spec struct_decl_list struct_decl
-%type <node> spec_qualifier_list translation_unit declarator direct_declarator exp
+%type <node> spec_qualifier_list translation_unit declarator direct_declarator exp assignment_operator
 %type <node> struct_declarator_list struct_declarator param_list param_decl compound_stat stat jump_statement
 %type <node> assignment_exp conditional_exp logical_and_exp inclusive_or_exp exclusive_or_exp and_exp
 %type <node> equality_exp relational_exp additive_exp mult_exp unary_exp logical_or_exp postfix_exp primary_exp
@@ -159,10 +159,10 @@ exp							: assignment_exp											{$$ = $1;}
 							| exp ',' assignment_exp									{$$ = new Node("Return expression"); $$->addChild($3);}
 							;
 assignment_exp				: conditional_exp											{$$ = $1;}
-							| unary_exp assignment_operator assignment_exp				{$$ = new Node("Assignment expression");}
+							| unary_exp assignment_operator assignment_exp				{$$ = new Node("Assignment expression"); $$->addChild($1); $$->addChild($2); $$->addChild($3); }
 							;
-assignment_operator			: PUNC
-							| '='
+assignment_operator			: PUNC														{$$ = new Node($1);}	
+							| '='														{$$ = new Node("=");}
 							;
 conditional_exp				: logical_or_exp											{$$ = $1;}
 							| logical_or_exp '?' exp ':' conditional_exp				{$$ = new Node("Ternary placeholder");}
@@ -185,7 +185,7 @@ and_exp						: equality_exp												{$$ = $1;}
 							| and_exp '&' equality_exp                                  {$$ = new Node("&"); $$->addChild($1); $$->addChild($3);}
 							;
 equality_exp				: relational_exp											{$$ = $1;}	
-							| equality_exp COMPARISON relational_exp                    {$$ = new Node("COMPARISON"); $$->addChild($1); $$->addChild($3);}
+							| equality_exp COMPARISON relational_exp                    {$$ = new Node($2); $$->addChild($1); $$->addChild($3);}
 							;
 relational_exp				: additive_exp												{$$ = $1;}	
 							| relational_exp '<' additive_exp                           {$$ = new Node("<"); $$->addChild($1); $$->addChild($3);}

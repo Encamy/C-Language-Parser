@@ -18,11 +18,11 @@
 "return"																									{return RETURN;}
 "||" 																										{return OR;}
 "&&"																										{return AND;}
-"=="|"!="|"<="|">="																							{return COMPARISON;}
+"=="|"!="|"<="|">="																							{yylval.value = strdup(yytext); return COMPARISON;}
 "++"|"--"																									{return inc_const;}
 "->"																										{return point_const;}
 ";"|"="|","|"{"|"}"|"("|")"|"["|"]"|"*"|"+"|"-"|"/"|"?"|":"|"&"|"|"|"^"|"!"|"~"|"%"|"<"|">"					{return yytext[0];}
-"*="|"/="|"+="|"%="|">>="|"-="|"<<="|"&="|"^="|"|="															{return PUNC;}
+"*="|"/="|"+="|"%="|">>="|"-="|"<<="|"&="|"^="|"|="															{yylval.value = strdup(yytext); return PUNC;}
 [0-9]+																										{yylval.value = strdup(yytext); return number;}
 [0-9]+"."[0-9]+																								{yylval.value = strdup(yytext); return number;}	
 "'"."'"																										{yylval.value = strdup(yytext); return char_const;}

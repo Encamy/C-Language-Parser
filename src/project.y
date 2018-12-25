@@ -24,7 +24,7 @@
 %type <node> struct_declarator_list struct_declarator param_list param_decl compound_stat stat jump_statement
 %type <node> assignment_exp conditional_exp logical_and_exp inclusive_or_exp exclusive_or_exp and_exp
 %type <node> equality_exp relational_exp additive_exp mult_exp unary_exp logical_or_exp postfix_exp primary_exp
-%type <node> decl_list init_declarator body_list decl_or_statement loop_statement
+%type <node> decl_list init_declarator body_list decl_or_statement loop_statement exp_stat selection_statement
 %type <value> consts
 
 %left '+' '-'
@@ -118,14 +118,14 @@ initializer					: assignment_exp
 initializer_list			: initializer
 							| initializer_list ',' initializer
 							;
-stat						: exp_stat 											  		{$$ = new Node("Stat1");}
+stat						: exp_stat 											  		{$$ = $1;}
 							| compound_stat 									  	    {$$ = $1;}
-							| selection_statement  									    {$$ = new Node("Stat3");}
+							| selection_statement  									    {$$ = $1;}
 							| loop_statement                                            {$$ = $1;}
 							| jump_statement                                            {$$ = $1;}
 							;
-exp_stat					: exp ';'
-							| ';'
+exp_stat					: exp ';'													{$$ = $1;}
+							| ';'														{$$ = new Node("");}
 							;
 body_list					: decl_or_statement											{$$ = new Node("Declarations"); $$->addChild($1);}
 							| body_list decl_or_statement								{$$ = $1; $$->addChild($2);}
@@ -136,8 +136,8 @@ decl_or_statement			: declaration												{$$ = $1;}
 compound_stat				: '{' body_list '}'											{$$ = new Node("Body"); $$->addChild($2);}	
 							| '{' '}'												    {$$ = new Node("Empty body");}
 							;
-selection_statement			: IF '(' exp ')' stat 									%prec "then"
-							| IF '(' exp ')' stat ELSE stat
+selection_statement			: IF '(' exp ')' stat 									%prec "then"	{$$ = new Node("If"); $$->addChild($3); $$->addChild($5);}
+							| IF '(' exp ')' stat ELSE stat								{$$ = new Node("If", "else"); $$->addChild($3); $$->addChild($5); $$->addChild($7);}
 							;
 loop_statement				: WHILE '(' exp ')' stat									{$$ = new Node("While loop"); $$->addChild($3); $$->addChild($5);}
 							| DO stat WHILE '(' exp ')' ';'                             {$$ = new Node("Loop");}

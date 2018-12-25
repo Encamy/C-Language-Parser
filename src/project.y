@@ -23,7 +23,7 @@
 %type <node> spec_qualifier_list translation_unit declarator direct_declarator statement_list exp
 %type <node> struct_declarator_list struct_declarator param_list param_decl compound_stat stat jump_statement
 %type <node> assignment_exp conditional_exp logical_and_exp inclusive_or_exp exclusive_or_exp and_exp
-%type <node> equality_exp relational_exp additive_exp mult_exp unary_exp logical_or_exp postfix_exp
+%type <node> equality_exp relational_exp additive_exp mult_exp unary_exp logical_or_exp postfix_exp primary_exp
 
 %left '+' '-'
 %left '*' '/'
@@ -167,43 +167,43 @@ conditional_exp				: logical_or_exp											{$$ = $1;}
 const_exp					: conditional_exp
 							;
 logical_or_exp				: logical_and_exp											{$$ = $1;}
-							| logical_or_exp OR logical_and_exp							{$$ = new Node("logical_or_exp"); $$->addChild($3);}
+							| logical_or_exp OR logical_and_exp							{$$ = new Node("OR"); $$->addChild($1); $$->addChild($3);}
 							;
 logical_and_exp				: inclusive_or_exp											{$$ = $1;}	
-							| logical_and_exp AND inclusive_or_exp						{$$ = new Node("logical_and_exp"); $$->addChild($3);}
+							| logical_and_exp AND inclusive_or_exp						{$$ = new Node("AND"); $$->addChild($1); $$->addChild($3);}
 							;
 inclusive_or_exp			: exclusive_or_exp											{$$ = $1;}	
-							| inclusive_or_exp '|' exclusive_or_exp                     {$$ = new Node("inclusive_or_exp"); $$->addChild($3);}
+							| inclusive_or_exp '|' exclusive_or_exp                     {$$ = new Node("|"); $$->addChild($1); $$->addChild($3);}
 							;
 exclusive_or_exp			: and_exp													{$$ = $1;}	
-							| exclusive_or_exp '^' and_exp                              {$$ = new Node("exclusive_or_exp"); $$->addChild($3);}
+							| exclusive_or_exp '^' and_exp                              {$$ = new Node("^"); $$->addChild($1); $$->addChild($3);}
 							;
 and_exp						: equality_exp												{$$ = $1;}	
-							| and_exp '&' equality_exp                                  {$$ = new Node("and_exp"); $$->addChild($3);}
+							| and_exp '&' equality_exp                                  {$$ = new Node("&"); $$->addChild($1); $$->addChild($3);}
 							;
 equality_exp				: relational_exp											{$$ = $1;}	
-							| equality_exp COMPARISON relational_exp                    {$$ = new Node("equality_exp"); $$->addChild($3);}
+							| equality_exp COMPARISON relational_exp                    {$$ = new Node("COMPARISON"); $$->addChild($1); $$->addChild($3);}
 							;
 relational_exp				: additive_exp												{$$ = $1;}	
-							| relational_exp '<' additive_exp                           {$$ = new Node("relational_exp"); $$->addChild($3);}
-							| relational_exp '>' additive_exp							{$$ = new Node("relational_exp"); $$->addChild($3);}	
+							| relational_exp '<' additive_exp                           {$$ = new Node("<"); $$->addChild($1); $$->addChild($3);}
+							| relational_exp '>' additive_exp							{$$ = new Node(">"); $$->addChild($1); $$->addChild($3);}	
 							;
 additive_exp				: mult_exp													{$$ = $1;}	
-							| additive_exp '+' mult_exp                                 {$$ = new Node("additive_exp"); $$->addChild($3);}
-							| additive_exp '-' mult_exp                                 {$$ = new Node("additive_exp"); $$->addChild($3);}
+							| additive_exp '+' mult_exp                                 {$$ = new Node("+"); $$->addChild($1); $$->addChild($3);}
+							| additive_exp '-' mult_exp                                 {$$ = new Node("-"); $$->addChild($1); $$->addChild($3);}
 							;
 mult_exp					: unary_exp													{$$ = $1;}	
-							| mult_exp '*' unary_exp                                	{$$ = new Node("mult_exp"); $$->addChild($3);}
-							| mult_exp '/' unary_exp                                	{$$ = new Node("mult_exp"); $$->addChild($3);}
-							| mult_exp '%' unary_exp									{$$ = new Node("mult_exp"); $$->addChild($3);}
+							| mult_exp '*' unary_exp                                	{$$ = new Node("+"); $$->addChild($1); $$->addChild($3);}
+							| mult_exp '/' unary_exp                                	{$$ = new Node("/"); $$->addChild($1); $$->addChild($3);}
+							| mult_exp '%' unary_exp									{$$ = new Node("%"); $$->addChild($1); $$->addChild($3);}
 							;
 unary_exp					: postfix_exp												{$$ = $1;}	
-							| inc_const unary_exp                                       {$$ = new Node("unary_exp"); $$->addChild($2);}
-							| unary_operator unary_exp                                  {$$ = new Node("unary_exp"); $$->addChild($2);}
+							| inc_const unary_exp                                       {$$ = new Node("++ or --"); $$->addChild($2);}
+							| unary_operator unary_exp                                  {$$ = new Node("unary operator"); $$->addChild($2);}
 							;
 unary_operator				: '&' | '*' | '+' | '-' | '~' | '!' 				
 							;
-postfix_exp					: primary_exp 												{$$ = new Node("Postfix expression");}
+postfix_exp					: primary_exp 												{$$ = $1;}
 							| postfix_exp '[' exp ']'                                   {$$ = new Node("Postfix expression");}
 							| postfix_exp '(' argument_exp_list ')'                     {$$ = new Node("Postfix expression");}
 							| postfix_exp '(' ')'                                       {$$ = new Node("Postfix expression");}
@@ -211,10 +211,10 @@ postfix_exp					: primary_exp 												{$$ = new Node("Postfix expression");}
 							| postfix_exp point_const id                                {$$ = new Node("Postfix expression");}
 							| postfix_exp inc_const                                     {$$ = new Node("Postfix expression");}
 							;
-primary_exp					: id 													
-							| consts 												
-							| string 												
-							| '(' exp ')'
+primary_exp					: id 														{$$ = new Node("id", $1);}
+							| consts 													{$$ = new Node("value");}	
+							| string 													{$$ = new Node("string");}
+							| '(' exp ')'												{$$ = new Node("expression"); $$->addChild($2);}
 							;
 argument_exp_list			: assignment_exp
 							| argument_exp_list ',' assignment_exp

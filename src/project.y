@@ -24,7 +24,7 @@
 %type <node> struct_declarator_list struct_declarator param_list param_decl compound_stat stat jump_statement
 %type <node> assignment_exp conditional_exp logical_and_exp inclusive_or_exp exclusive_or_exp and_exp
 %type <node> equality_exp relational_exp additive_exp mult_exp unary_exp logical_or_exp postfix_exp primary_exp
-%type <node> decl_list init_declarator body_list decl_or_statement
+%type <node> decl_list init_declarator body_list decl_or_statement loop_statement
 %type <value> consts
 
 %left '+' '-'
@@ -51,7 +51,7 @@ function_definition			: decl_specs declarator decl_list compound_stat 			{printf
 							| decl_specs declarator	compound_stat 						{$$ = new Node("Func"); $$->addChild($1); $$->addChild($2); $$->addChild($3);}	
 							| declarator compound_stat                                  {printf("function_definition4\n");}
 							;
-declaration					: decl_specs init_declarator_list ';' 						{$$ = new Node("declaration"); $$->addChild($1); $$->addChild($2);}				
+declaration					: decl_specs init_declarator_list ';' 						{$$ = new Node("Declaration"); $$->addChild($1); $$->addChild($2);}				
 							| decl_specs ';'											{$$ = $1;}				
 							;
 decl_list					: declaration												{$$ = $1;}
@@ -119,9 +119,9 @@ initializer_list			: initializer
 							| initializer_list ',' initializer
 							;
 stat						: exp_stat 											  		{$$ = new Node("Stat1");}
-							| compound_stat 									  	    {$$ = new Node("Stat2");}
+							| compound_stat 									  	    {$$ = $1;}
 							| selection_statement  									    {$$ = new Node("Stat3");}
-							| loop_statement                                            {$$ = new Node("Stat4");}
+							| loop_statement                                            {$$ = $1;}
 							| jump_statement                                            {$$ = $1;}
 							;
 exp_stat					: exp ';'
@@ -139,16 +139,16 @@ compound_stat				: '{' body_list '}'											{$$ = new Node("Body"); $$->addCh
 selection_statement			: IF '(' exp ')' stat 									%prec "then"
 							| IF '(' exp ')' stat ELSE stat
 							;
-loop_statement			: WHILE '(' exp ')' stat
-							| DO stat WHILE '(' exp ')' ';'
-							| FOR '(' exp ';' exp ';' exp ')' stat
-							| FOR '(' exp ';' exp ';'	')' stat
-							| FOR '(' exp ';' ';' exp ')' stat
-							| FOR '(' exp ';' ';' ')' stat
-							| FOR '(' ';' exp ';' exp ')' stat
-							| FOR '(' ';' exp ';' ')' stat
-							| FOR '(' ';' ';' exp ')' stat
-							| FOR '(' ';' ';' ')' stat
+loop_statement				: WHILE '(' exp ')' stat									{$$ = new Node("While loop"); $$->addChild($3); $$->addChild($5);}
+							| DO stat WHILE '(' exp ')' ';'                             {$$ = new Node("Loop");}
+							| FOR '(' exp ';' exp ';' exp ')' stat                      {$$ = new Node("For loop"); $$->addChild($3); $$->addChild($5); $$->addChild($7); $$->addChild($9); }
+							| FOR '(' exp ';' exp ';'	')' stat                        {$$ = new Node("For loop"); $$->addChild($3); $$->addChild($5); $$->addChild($8); }
+							| FOR '(' exp ';' ';' exp ')' stat                          {$$ = new Node("For loop"); $$->addChild($3); $$->addChild($6); $$->addChild($8); }
+							| FOR '(' exp ';' ';' ')' stat                              {$$ = new Node("For loop"); $$->addChild($3); $$->addChild($7); }
+							| FOR '(' ';' exp ';' exp ')' stat                          {$$ = new Node("For loop"); $$->addChild($4); $$->addChild($6); $$->addChild($8); }
+							| FOR '(' ';' exp ';' ')' stat                              {$$ = new Node("For loop"); $$->addChild($4); $$->addChild($7); }
+							| FOR '(' ';' ';' exp ')' stat                              {$$ = new Node("For loop"); $$->addChild($5); $$->addChild($7); }
+							| FOR '(' ';' ';' ')' stat                                  {$$ = new Node("For loop"); $$->addChild($6); }
 							;
 jump_statement				: CONTINUE ';'												{$$ = new Node("continue");}
 							| BREAK ';'                                                 {$$ = new Node("break");}

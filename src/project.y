@@ -95,7 +95,7 @@ direct_declarator			: id 														{$$ = new Node("Id", $1);}
 							| '(' declarator ')'										{$$ = new Node("ID1");}
 							| direct_declarator '[' const_exp ']'						{$$ = new Node("ID2");}	
 							| direct_declarator '['	']'                                 {$$ = new Node("ID3");}
-							| direct_declarator '(' param_list ')' 			            {$$ = $3;}
+							| direct_declarator '(' param_list ')' 			            {$$ = new Node("'" + $1->value + "'"); $$->addChild($3);}
 							| direct_declarator '(' id_list ')' 					    {$$ = new Node("ID5");}
 							| direct_declarator '('	')' 							    {$$ = new Node("ID6");}
 							;

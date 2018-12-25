@@ -5,9 +5,11 @@ struct Point {
   int y;
 };
 
-bool isBST(int a, int b) 
+bool clamp(int a, int b) 
 {
-  return a > b;
+  int c = 25;
+  int ret = (a > b)? a: b;
+  return ret > c;
 }
 
 int main(int argc, char * argv[]) 

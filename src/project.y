@@ -24,6 +24,7 @@
 %type <node> struct_declarator_list struct_declarator param_list param_decl compound_stat stat jump_statement
 %type <node> assignment_exp conditional_exp logical_and_exp inclusive_or_exp exclusive_or_exp and_exp
 %type <node> equality_exp relational_exp additive_exp mult_exp unary_exp logical_or_exp postfix_exp primary_exp
+%type <node> decl_list init_declarator
 
 %left '+' '-'
 %left '*' '/'
@@ -49,11 +50,11 @@ function_definition			: decl_specs declarator decl_list compound_stat 			{printf
 							| decl_specs declarator	compound_stat 						{$$ = new Node("Func"); $$->addChild($1); $$->addChild($2); $$->addChild($3);}	
 							| declarator compound_stat                                  {printf("function_definition4\n");}
 							;
-declaration					: decl_specs init_declarator_list ';' 						{$$ = new Node("declaration"); $$->addChild($1);}				
+declaration					: decl_specs init_declarator_list ';' 						{$$ = new Node("declaration"); $$->addChild($1); $$->addChild($2);}				
 							| decl_specs ';'											{$$ = $1;}				
 							;
-decl_list					: declaration
-							| decl_list declaration
+decl_list					: declaration												{$$ = $1;}
+							| decl_list declaration                                     {$$ = new Node("Declarations"); $$->addChild($2);}
 							;
 decl_specs					: type_specificator decl_specs								{$$ = new Node("decl_specs"); $$->addChild($1);}				
 							| type_specificator 										{$$ = $1;}				
@@ -68,8 +69,8 @@ struct_or_union_spec		: STRUCT id '{' struct_decl_list '}'						{$$ = new Node("
 struct_decl_list			: struct_decl												{$$ = $1;}
 							| struct_decl_list struct_decl								{$$ = new Node("Fields"); $$->addChild($1); $$->addChild($2);}
 							;
-init_declarator_list		: init_declarator											{$$ = new Node("init_declarator_list");}
-							| init_declarator_list ',' init_declarator	
+init_declarator_list		: init_declarator											{$$ = $1;}
+							| init_declarator_list ',' init_declarator					{$$ = new Node("init_declarator_list"); $$->addChild($1); $$->addChild($3);}	
 							;
 init_declarator				: declarator
 							| declarator '=' initializer
@@ -125,7 +126,7 @@ stat						: exp_stat 											  		{$$ = new Node("Stat1");}
 exp_stat					: exp ';'
 							| ';'
 							;
-compound_stat				: '{' decl_list statement_list '}'   						{$$ = new Node("Body1");}
+compound_stat				: '{' decl_list statement_list '}'   						{$$ = new Node("Body"); $$->addChild($2); $$->addChild($3);}
 							| '{' statement_list '}'									{$$ = new Node("Body"); $$->addChild($2);}	
 							| '{' decl_list	'}'										    {$$ = new Node("Body3");}
 							| '{' '}'												    {$$ = new Node("Body4");}

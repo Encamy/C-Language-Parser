@@ -1,52 +1,34 @@
 %option yylineno
-
+%option noyywrap
 %{
-	#include<stdio.h>
-	#include"y.tab.h"
-	#include<math.h>
+	#include <stdio.h>
+	#include "project.tab.h"
 %}
 %%
-"#include"([ ]+)?((<(\\.|[^>])+>)|(\"(\\.|[^"])+\"))					                                    {return HEADER;}
-"#define"[ ]+[a-zA-z_][a-zA-z_0-9]* 																	    {return DEFINE;}
-"auto"|"register"|"static"|"extern"|"typedef"																{return storage_const;}
-"void"|"char"|"short"|"int"|"long"|"float"|"double"|"signed"|"unsigned"										{return type_const;}	
-"const"|"volatile"																							{return qual_const;}
-"enum"																										{return enum_const;}
-"case"																										{return CASE;}	
-"default"																									{return DEFAULT;}
+"#include"([ ]+)?((<(\\.|[^>])+>)|(\"(\\.|[^"])+\"))					                                    {	yylval.value = strdup(yytext); 	return HEADER;	}
+"void"|"char"|"short"|"int"|"long"|"float"|"double"|"signed"|"unsigned"|"bool"								{ 	yylval.value = strdup(yytext);	return TYPE;	}	
 "if"																										{return IF;}
-"switch"																									{return SWITCH;}
 "else"																										{return ELSE;}
 "for"																										{return FOR;}
 "do"																										{return DO;}
 "while"																										{return WHILE;}
-"goto"																										{return GOTO;}
 "continue"																									{return CONTINUE;}
 "break"																										{return BREAK;}
-"struct"|"union"																							{return struct_const;}
+"struct"																									{return STRUCT;}
 "return"																									{return RETURN;}
-"sizeof"																									{return SIZEOF;}
-"||" 																										{return or_const;}
-"&&"																										{return and_const;}
-"..."																										{return param_const;}
-"=="|"!="																									{return eq_const;}
-"<="|">="																									{return rel_const;}
-">>"|"<<"																									{return shift_const;}
+"||" 																										{return OR;}
+"&&"																										{return AND;}
+"=="|"!="|"<="|">="																							{return COMPARISON;}
 "++"|"--"																									{return inc_const;}
 "->"																										{return point_const;}
 ";"|"="|","|"{"|"}"|"("|")"|"["|"]"|"*"|"+"|"-"|"/"|"?"|":"|"&"|"|"|"^"|"!"|"~"|"%"|"<"|">"					{return yytext[0];}
 "*="|"/="|"+="|"%="|">>="|"-="|"<<="|"&="|"^="|"|="															{return PUNC;}
-[0-9]+																									{return int_const;}
-[0-9]+"."[0-9]+																						{return float_const;}	
+[0-9]+																										{return number;}
+[0-9]+"."[0-9]+																								{return number;}	
 "'"."'"																										{return char_const;}
-[a-zA-z_][a-zA-z_0-9]*			 																			{return id;}
+[a-zA-z_][a-zA-z_0-9]*			 																			{ 	yylval.value = strdup(yytext); return id;	}
 \"(\\.|[^\"])*\"																							{return string;}
 "//"(\\.|[^\n])*[\n]																						;
 [/][*]([^*]|[*]*[^*/])*[*]+[/]                                                                              ;
 [ \t\n]																										;
 %%
-
-int yywrap(void)
-{
-    return 1;
-}

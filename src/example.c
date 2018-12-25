@@ -5,7 +5,7 @@ struct Point {
   int y;
 };
 
-bool isBST(struct node* node, int c) 
+bool isBST(int a, int b) 
 {
   return a > b;
 }

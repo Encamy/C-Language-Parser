@@ -100,10 +100,10 @@ pointer						: '*'
 							| '*' pointer
 							;
 param_list					: param_decl												{$$ = $1;}	
-							| param_list ',' param_decl									{$$ = $3;}	
+							| param_list ',' param_decl									{$$ = new Node("Arguments"); $$->addChild($1); $$->addChild($3);}	
 							;
-param_decl					: decl_specs declarator										{$$ = new Node("Arguments"); $$->addChild($1); $$->addChild($2);}
-							| decl_specs												{$$ = new Node("placeholder2"); $$->addChild($1);}
+param_decl					: decl_specs declarator										{$$ = new Node("Argument"); $$->addChild($1); $$->addChild($2);}
+							| decl_specs												{$$ = new Node("Argument"); $$->addChild($1);}
 							;
 id_list						: id
 							| id_list ',' id

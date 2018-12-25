@@ -85,14 +85,14 @@ struct_declarator			: declarator												{$$ = $1;}
 							| declarator ':' const_exp
 							| ':' const_exp
 							;
-declarator					: pointer direct_declarator									{/*$$ = new Node("Declarator"); $$->addChild($2);*/}
+declarator					: pointer direct_declarator									{$$ = $2;}
 							| direct_declarator											{$$ = $1;}
 							;
 direct_declarator			: id 														{$$ = new Node("Id", $1);}
 							| '(' declarator ')'										{$$ = new Node("ID1");}
 							| direct_declarator '[' const_exp ']'						{$$ = new Node("ID2");}	
 							| direct_declarator '['	']'                                 {$$ = new Node("ID3");}
-							| direct_declarator '(' param_list ')' 			            {$$ = new Node("Arguments"); $$->addChild($3);}
+							| direct_declarator '(' param_list ')' 			            {$$ = $3;}
 							| direct_declarator '(' id_list ')' 					    {$$ = new Node("ID5");}
 							| direct_declarator '('	')' 							    {$$ = new Node("ID6");}
 							;
@@ -100,10 +100,10 @@ pointer						: '*'
 							| '*' pointer
 							;
 param_list					: param_decl												{$$ = $1;}	
-							| param_list ',' param_decl									{$$ = new Node("param_list"); $$->addChild($3);}	
+							| param_list ',' param_decl									{$$ = $3;}	
 							;
-param_decl					: decl_specs declarator										{$$ = new Node("placeholder");}
-							| decl_specs												{$$ = new Node("placeholder");}
+param_decl					: decl_specs declarator										{$$ = new Node("Arguments"); $$->addChild($1); $$->addChild($2);}
+							| decl_specs												{$$ = new Node("placeholder2"); $$->addChild($1);}
 							;
 id_list						: id
 							| id_list ',' id

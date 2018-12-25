@@ -20,9 +20,8 @@
 
 %type <node> external_declaration program_unit main_parse function_definition declaration decl_specs
 %type <node> init_declarator_list type_specificator struct_or_union_spec struct_decl_list struct_decl
-%type <node> spec_qualifier_list translation_unit declarator direct_declarator
-
-%type <node> struct_declarator_list struct_declarator param_list param_decl
+%type <node> spec_qualifier_list translation_unit declarator direct_declarator statement_list
+%type <node> struct_declarator_list struct_declarator param_list param_decl compound_stat stat jump_statement
 
 %left '+' '-'
 %left '*' '/'
@@ -45,7 +44,7 @@ external_declaration		: function_definition										{$$ = new Node("Function de
 							;
 function_definition			: decl_specs declarator decl_list compound_stat 			{printf("function_definition1\n");}
 							| declarator decl_list compound_stat						{printf("function_definition2\n");}
-							| decl_specs declarator	compound_stat 						{$$ = new Node("Func"); $$->addChild($1); $$->addChild($2);}	
+							| decl_specs declarator	compound_stat 						{$$ = new Node("Func"); $$->addChild($1); $$->addChild($2); $$->addChild($3);}	
 							| declarator compound_stat                                  {printf("function_definition4\n");}
 							;
 declaration					: decl_specs init_declarator_list ';' 						{$$ = new Node("declaration"); $$->addChild($1);}				
@@ -115,22 +114,22 @@ initializer					: assignment_exp
 initializer_list			: initializer
 							| initializer_list ',' initializer
 							;
-stat						: exp_stat 											  	
-							| compound_stat 									  	
-							| selection_statement  									  
-							| loop_statement
-							| jump_statement
+stat						: exp_stat 											  		{$$ = new Node("Stat1");}
+							| compound_stat 									  	    {$$ = new Node("Stat2");}
+							| selection_statement  									    {$$ = new Node("Stat3");}
+							| loop_statement                                            {$$ = new Node("Stat4");}
+							| jump_statement                                            {$$ = $1;}
 							;
 exp_stat					: exp ';'
 							| ';'
 							;
-compound_stat				: '{' decl_list statement_list '}'   						
-							| '{' statement_list '}'										
-							| '{' decl_list	'}'										
-							| '{' '}'												
+compound_stat				: '{' decl_list statement_list '}'   						{$$ = new Node("Body1");}
+							| '{' statement_list '}'									{$$ = new Node("Body"); $$->addChild($2);}	
+							| '{' decl_list	'}'										    {$$ = new Node("Body3");}
+							| '{' '}'												    {$$ = new Node("Body4");}
 							;
-statement_list				: stat     												
-							| statement_list stat  										
+statement_list				: stat     													{$$ = $1;}											
+							| statement_list stat  										{$$ = new Node("statement_list"); $$->addChild($2);}
 							;
 selection_statement			: IF '(' exp ')' stat 									%prec "then"
 							| IF '(' exp ')' stat ELSE stat
@@ -146,10 +145,10 @@ loop_statement			: WHILE '(' exp ')' stat
 							| FOR '(' ';' ';' exp ')' stat
 							| FOR '(' ';' ';' ')' stat
 							;
-jump_statement				: CONTINUE ';'
-							| BREAK ';'
-							| RETURN exp ';'
-							| RETURN ';'
+jump_statement				: CONTINUE ';'												{$$ = new Node("continue");}
+							| BREAK ';'                                                 {$$ = new Node("break");}
+							| RETURN exp ';'                                            {$$ = new Node("return expression");}
+							| RETURN ';'                                                {$$ = new Node("return");}
 							;
 exp							: assignment_exp
 							| exp ',' assignment_exp

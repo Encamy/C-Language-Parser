@@ -22,7 +22,7 @@
 %type <node> init_declarator_list type_specificator struct_or_union_spec struct_decl_list struct_decl
 %type <node> spec_qualifier_list translation_unit declarator direct_declarator
 
-%type <node> struct_declarator_list struct_declarator
+%type <node> struct_declarator_list struct_declarator param_list param_decl
 
 %left '+' '-'
 %left '*' '/'
@@ -45,7 +45,7 @@ external_declaration		: function_definition										{$$ = new Node("Function de
 							;
 function_definition			: decl_specs declarator decl_list compound_stat 			{printf("function_definition1\n");}
 							| declarator decl_list compound_stat						{printf("function_definition2\n");}
-							| decl_specs declarator	compound_stat 						{$$ = new Node("Func"); $$->addChild($1);}	
+							| decl_specs declarator	compound_stat 						{$$ = new Node("Func"); $$->addChild($1); $$->addChild($2);}	
 							| declarator compound_stat                                  {printf("function_definition4\n");}
 							;
 declaration					: decl_specs init_declarator_list ';' 						{$$ = new Node("declaration"); $$->addChild($1);}				
@@ -92,18 +92,18 @@ direct_declarator			: id 														{$$ = new Node("Id", $1);}
 							| '(' declarator ')'										{$$ = new Node("ID1");}
 							| direct_declarator '[' const_exp ']'						{$$ = new Node("ID2");}	
 							| direct_declarator '['	']'                                 {$$ = new Node("ID3");}
-							| direct_declarator '(' param_list ')' 			            {$$ = new Node("ID4");}
+							| direct_declarator '(' param_list ')' 			            {$$ = new Node("Arguments"); $$->addChild($3);}
 							| direct_declarator '(' id_list ')' 					    {$$ = new Node("ID5");}
 							| direct_declarator '('	')' 							    {$$ = new Node("ID6");}
 							;
 pointer						: '*'
 							| '*' pointer
 							;
-param_list					: param_decl
-							| param_list ',' param_decl
+param_list					: param_decl												{$$ = $1;}	
+							| param_list ',' param_decl									{$$ = new Node("param_list"); $$->addChild($3);}	
 							;
-param_decl					: decl_specs declarator
-							| decl_specs
+param_decl					: decl_specs declarator										{$$ = new Node("placeholder");}
+							| decl_specs												{$$ = new Node("placeholder");}
 							;
 id_list						: id
 							| id_list ',' id
